@@ -12,7 +12,7 @@ var usersRouter = require('./routes/users');
 var apiRouter = require('./routes/api');
 
 var app = express();
-const PORT = process.env.PORT || 3000;
+const port = 10000;
 
 // Function to connect to the database and start the server
 async function startServer() {
