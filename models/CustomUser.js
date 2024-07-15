@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const defaultGroupId = new mongoose.Types.ObjectId('668e160d1189c5010d026dd1'); // Correct instantiation with 'new'
 

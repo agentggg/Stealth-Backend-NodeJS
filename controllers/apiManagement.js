@@ -160,3 +160,4 @@ exports.all_filtered_list_exercises = async(req, res) => {
         });
     }
 }
+
