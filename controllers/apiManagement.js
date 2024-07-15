@@ -49,9 +49,8 @@ exports.all_exercises = async (req, res) => {
 exports.specific_target_exercise = async(req, res) => {
     const name = (req.params.name)
     try {
-        database = await client.db('your_database_name');
-        const result = await Exercise.savedExercise({}, { bodyPart: 1, _id: 0 }).exec();
-        delete response[0].bodyPart
+        const response = await savedExercise.find({ target: name}).exec();
+        // delete response[0].bodyPart
         if (response.length != 0){
             res.status (200).json({
                 status: 'success',
@@ -105,7 +104,6 @@ exports.targeted_list = async(req, res) => {
 
 exports.all_filtered_list = async(req, res) => {
     const filter = req.params.filter_by
-    console.log(filter)
     try {
         result = await savedExercise.find({}, `${filter} -_id`).exec()
         let response = []
