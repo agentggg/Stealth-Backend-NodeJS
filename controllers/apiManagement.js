@@ -1,7 +1,6 @@
 const axios = require('axios')
 const savedExercise = require('../models/Exercises');
 
-
 exports.all_exercises = async (req, res) => {
     const url = 'https://exercisedb.p.rapidapi.com/exercises?offset=0&limit=0';
     const headers = {
@@ -159,3 +158,50 @@ exports.all_filtered_list_exercises = async(req, res) => {
     }
 }
 
+exports.custom_filter = async(req, res) => {
+    const filterType = req.params.filter_name
+    const filterCriteria = req.params.filter
+    try{
+        const response = await savedExercise.find({[filterType]:filterCriteria}).exec()
+        console.log(response)
+        if (response.length < 1) {
+            throw new Error('No value found')
+        }
+        res.status (200).json({
+            status: 'success',
+            message: response
+        })
+    }   
+    catch(error){
+        console.error(error);
+        res.status(400).send({
+            status: 'failed',
+            message: `failed to retrieve ${filterType} name ${filterCriteria}`,
+        });
+    } 
+}
+
+
+exports.default_packages = async(req, res) => {
+    const all = await savedExercise.find({})
+    let bodyParts = await axios('http://127.0.0.1:3000/api/all_filtered_list/bodyPart')
+    bodyParts = bodyParts.data.message
+    bodyParts.forEach((eachPart) => {
+        const variableName = eachPart
+          .toLowerCase()
+          .replace(/\s+/g, '_')
+          .replace(/[^\w_]/g, '');
+        eval(`global.${variableName} = []`);
+      });
+
+      console.log(global.head); // Output: ['hat']
+
+
+    all.map((bodyParts)=>{
+        bodyParts.push(eachItem.bodyPart) 
+    })
+    do { 
+        const randomElement = all[Math.floor(Math.random() * all.length)]
+        waist.push(randomElement)
+    }while (packages.length < 3)
+} 

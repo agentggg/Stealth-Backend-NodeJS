@@ -10,7 +10,9 @@ const UserSchema = new mongoose.Schema({
     password: { type: String, required: true },
     isActive: { type: Boolean, required: true, default: true },
     createdAt: { type: Date, default: Date.now },
-    accessLevel: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', default: defaultGroupId }
+    accessLevel: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', default: defaultGroupId },
+    accountRetry: {type: Number, default:0},
+    lastLoginAttempt: { type: Date, default: Date.now },
 })
 
 // Hash the password before saving it to the database

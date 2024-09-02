@@ -1,4 +1,6 @@
-const debug = require('debug')('api:server');
+require('dotenv').config();
+const debugServer = require('debug')('api:server');
+const debugDb = require('debug')('api:database')
 const mongoose = require('mongoose');
 const createError = require('http-errors');
 const express = require('express');
@@ -23,9 +25,9 @@ app.set('port', port);
 async function connectDB() {
   try {
     await mongoose.connect('mongodb+srv://development:Gq9a9ijoDAJFruOm@r-nation.95mnxgm.mongodb.net/Stealth_DEV');
-    debug('Database connected successfully');
+    debugDb('Database connected successfully');
   } catch (error) {
-    debug('Database connection error:', error);
+    debugDb('Database connection error:', error);
     process.exit(1); // Exit the process with a failure code
   }
 }
@@ -110,11 +112,11 @@ if (require.main === module) {
     // handle specific listen errors with friendly messages
     switch (error.code) {
       case 'EACCES':
-        console.error(bind + ' requires elevated privileges');
+        debugServer(bind + ' requires elevated privileges');
         process.exit(1);
         break;
       case 'EADDRINUSE':
-        console.error(bind + ' is already in use');
+        debugServer(bind + ' is already in use');
         process.exit(1);
         break;
       default:
@@ -128,8 +130,8 @@ if (require.main === module) {
   function onListening() {
     const addr = server.address();
     const bind = typeof addr === 'string' ? addr : `${addr.address}:${addr.port}`;
-    debug('Listening on ' + bind);
-    console.log(`Server is listening on ${bind}`);
+    debugServer('Listening on ' + bind);
+    debugServer(`Server is listening on ${bind}`);
   }
 }
 
