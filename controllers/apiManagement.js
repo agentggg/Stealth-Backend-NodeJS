@@ -205,3 +205,4 @@ exports.default_packages = async(req, res) => {
         waist.push(randomElement)
     }while (packages.length < 3)
 } 
+

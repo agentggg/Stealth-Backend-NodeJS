@@ -3,6 +3,7 @@ const Token = require('../models/AuthToken');
 const crypto = require('crypto');
 const debugAuth = require('debug')('api:auth')
 const debugTshoot = require('debug')('api:tshhot')
+const SendEmail = require('../shared/SendEmail')
 
 function generateRandomToken(size = 48) {
     return crypto.randomBytes(size).toString('hex');
@@ -63,24 +64,31 @@ exports.login = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-        debugAuth('Username or Password field missing')
-        return res.status(400).json({
-            status: 'failed',
-            message: 'Username and password are required'
+        debugAuth('Username or password field missing')
+        return res.status(200).json({
+            status: 'failed', 
+            message: 'Username and password are required.'
         });
     }
     try {
+        // checking if {username exist, if the account is active, }
         const userProfile = await User.findOne({ username }).populate('accessLevel', 'name'); 
-         
+        // SendEmail(userProfile.email, 'Sending Email using Node.js', 'That was easy!', function(err, response) {
+        //     if (err) {
+        //     console.log('Error:', err);
+        //     } else {
+        //     console.log('Success:', response);
+        //     }
+        // });
         if (!userProfile) {
             debugAuth('Incorrect username')
-            return res.status(401).json({
+            return res.status(200).json({
                 status: 'failed',
                 message: 'Incorrect credentials'
             });
         }
         if (!userProfile.isActive){
-            return res.status(403).json({
+            return res.status(200).json({
                 status: 'failed',
                 message: 'Your account is deactivated. Please reset your password.'
             });
@@ -95,11 +103,13 @@ exports.login = async (req, res) => {
             const retrieveUsernameLastLoginTime = retrieveUsernameInstance.lastLoginAttempt
             const futureTime = new Date(now + 1 * 60 * 1000); // 30 minutes in the future
             const retrieveUsernameRetryValue = retrieveUsernameInstance.accountRetry + 1
+            console.log("🚀 ~ exports.login= ~ retrieveUsernameRetryValue:", retrieveUsernameRetryValue)
             const updatedTime = new Date(retrieveUsernameLastLoginTime.getTime() + LOCK_DURATION);
-            debugTshoot("🚀 ~ exports.login= ~ updatedTime:", updatedTime)
-            debugTshoot("🚀 ~ exports.login= ~ retrieveUsernameLastLoginTime:", retrieveUsernameLastLoginTime)
-            debugTshoot("🚀 ~ exports.login= ~ currentTime:", currentTime)
-            debugTshoot("🚀 ~ exports.login= ~ futureTime:", futureTime)
+            // console.log("🚀 ~ exports.login= ~ updatedTime:", updatedTime)
+            // debugTshoot("🚀 ~ exports.login= ~ updatedTime:", updatedTime)
+            // debugTshoot("🚀 ~ exports.login= ~ retrieveUsernameLastLoginTime:", retrieveUsernameLastLoginTime)
+            // debugTshoot("🚀 ~ exports.login= ~ currentTime:", currentTime)
+            // debugTshoot("🚀 ~ exports.login= ~ futureTime:", futureTime)
 
             
             if (retrieveUsernameRetryValue === 4) {
@@ -112,13 +122,13 @@ exports.login = async (req, res) => {
                     },
                     { new: true }
                 );
-                return res.status(403).json({
+                return res.status(200).json({
                     status: 'failed',
                     message: 'Account is deactivated for 30 minutes'
                 });
             } else if (retrieveUsernameRetryValue > 4 && retrieveUsernameRetryValue < 7 && currentTime < updatedTime) {
                 debugAuth('Account is still locked');
-                return res.status(403).json({
+                return res.status(200).json({
                     status: 'failed',
                     message: 'Account is still locked'
                 });
@@ -129,7 +139,7 @@ exports.login = async (req, res) => {
                     { accountRetry: retrieveUsernameRetryValue },
                     { new: true }
                 );
-                return res.status(401).json({
+                return res.status(200).json({
                     status: 'failed',
                     message: 'Invalid username or password'
                 });
@@ -137,10 +147,10 @@ exports.login = async (req, res) => {
                 debugAuth('Account is now deactivated');
                 await User.findOneAndUpdate(
                     { username: username },
-                    { isActive: false },
+                    { isActive: true },
                     { new: true }
                 );
-                return res.status(403).json({
+                return res.status(200).json({
                     status: 'failed',
                     message: 'Your account is deactivated. Please reset your password.'
                 });
@@ -152,7 +162,7 @@ exports.login = async (req, res) => {
                     { accountRetry: retrieveUsernameRetryValue },
                     { new: true }
                 );
-                return res.status(401).json({
+                return res.status(200).json({
                     status: 'failed',
                     message: 'Invalid username or password'
                 });
@@ -164,8 +174,7 @@ exports.login = async (req, res) => {
         delete modifiedUserProfile._id;
         delete modifiedUserProfile.__v;
         delete modifiedUserProfile.accessLevel._id
-        
-
+    
         return res.status(200).json({
             status: 'successful',
             message: modifiedUserProfile,
