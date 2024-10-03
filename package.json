@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www",
-    "dev": "DEBUG=api:* nodemon app.js"
+    "start": "node ./bin/www",   
+    "dev": "DEBUG=api:* nodemon app.js"   
   },
   "dependencies": {
     "axios": "^1.7.2",
