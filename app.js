@@ -49,8 +49,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api', apiRouter);
-app.use('/api', workoutManagementRouter)
-app.use('/api', recordsRouter)
+app.use('/workout', workoutManagementRouter)
+// app.use('/api', recordsRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -73,7 +73,7 @@ app.use(function(err, req, res, next) {
 });
 // Conditionally start the server if this file is run directly
 if (require.main === module) {
-  /**
+  /** 
    * Create HTTP server.
    */
   const server = http.createServer(app);

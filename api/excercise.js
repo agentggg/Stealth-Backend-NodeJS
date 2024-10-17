@@ -1,5 +1,3 @@
-const axios = require('axios');
-
 const all_exercises = async() => {
     const url = 'https://exercisedb.p.rapidapi.com/exercises';
     const options = {

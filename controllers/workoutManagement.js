@@ -77,7 +77,7 @@ exports.updateExercise = async (req, res) => {
 
 exports.getExercises = async(req, res) => {
     try{
-        const username_param = req.params.username;
+        const username_param = req.params.username
         const username_id = await User.findOne({username:username_param})
         const my_workout_document = await Workouts.find({user_id:username_id._id}).populate('workouts')
         res.status(200).json({ 
