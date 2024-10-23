@@ -1,5 +1,7 @@
 const axios = require('axios')
 const savedExercise = require('../models/Exercises');
+const User = require('../models/CustomUser')
+const Workout = require('../models/WorkoutManagement')
 
 exports.all_exercises = async (req, res) => {
     const url = 'https://exercisedb.p.rapidapi.com/exercises?offset=0&limit=0';
@@ -133,10 +135,23 @@ exports.all_filtered_list = async(req, res) => {
 }
 
 exports.all_filtered_list_exercises = async(req, res) => {
-    const category_selected = req.params.name
-    const filter_criteria = req.query.filter_criteria
+    const category_selected = req.query.name
+    const filter_criteria = req.query.filter_criteria 
+    const username = req.query.username;
     try {
-        response = await savedExercise.find({[category_selected]:filter_criteria}).exec() 
+        username_instance = await User.findOne({username:username})     
+        let user_subscribed_workouts = await Workout.find(
+            { user_id: username_instance },
+            { workouts: 1, _id: 0 }
+        ).exec();
+
+        const response = await savedExercise.find(
+            {
+                [category_selected]: filter_criteria,
+                _id: { $nin: user_subscribed_workouts[0]['workouts'] }  // Exclude workouts user is subscribed to
+            }
+        ).exec();
+
         if (response.length != 0){
             res.status (200).json({
                 status: 'success',
