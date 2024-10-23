@@ -144,18 +144,27 @@ exports.all_filtered_list_exercises = async(req, res) => {
             { user_id: username_instance },
             { workouts: 1, _id: 0 }
         ).exec();
+        if (user_subscribed_workouts.length > 0){
+             global.response = await savedExercise.find(
+                {
+                    [category_selected]: filter_criteria,
+                    _id: { $nin: user_subscribed_workouts[0]['workouts'] }  // Exclude workouts user is subscribed to
+                }
+            ).exec();
+        } 
+        else{
+             global.response = await savedExercise.find(
+                {
+                    [category_selected]: filter_criteria,
+                }
+            ).exec();
+        }
 
-        const response = await savedExercise.find(
-            {
-                [category_selected]: filter_criteria,
-                _id: { $nin: user_subscribed_workouts[0]['workouts'] }  // Exclude workouts user is subscribed to
-            }
-        ).exec();
 
-        if (response.length != 0){
+        if (global.response.length != 0){
             res.status (200).json({
                 status: 'success',
-                message: response
+                message: global.response
             })
         }
         else{
