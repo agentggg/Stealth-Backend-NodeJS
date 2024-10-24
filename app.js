@@ -50,6 +50,8 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/api', apiRouter);
 app.use('/workout', workoutManagementRouter)
+app.use('/records', recordsRouter)
+
 // app.use('/api', recordsRouter)
 
 // catch 404 and forward to error handler
