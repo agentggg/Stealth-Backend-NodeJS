@@ -2,6 +2,7 @@ const Workouts = require('../models/WorkoutManagement');
 const Exercise = require('../models/Exercises');
 const User = require('../models/CustomUser')
 const Tracker = require('../models/WorkoutTracker')
+const Day = require('../models/Days')
 
 exports.updateExercise = async (req, res) => {
     try {
@@ -74,7 +75,6 @@ exports.updateExercise = async (req, res) => {
         });
     }
 };
-
 exports.getExercises = async(req, res) => {
     try{
         const username_param = req.params.username
@@ -91,3 +91,75 @@ exports.getExercises = async(req, res) => {
         })
     }
 }     
+exports.getDays = async(req, res) => {
+    try{
+        const username = req.params.username
+        const selected_day = req.params.selectDay
+        const username_instance = await User.find({username:username})
+        const day = await Day.find({user_id:username_instance[0]._id, day:selected_day}) 
+        res.status(200).json({
+            status:'success',
+            message:day
+        })
+    }   catch(err){
+            console.log("🚀 ~ exports.getDays=async ~ err:", err)
+            res.status(200).json({
+                status:'error',
+                message:'Error retrieving data'
+            })
+    }
+}
+exports.createDays = async(req, res) => {
+    try{
+        const username =  req.params.username
+        const username_instance = await User.find({username:username})
+        const days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        days_of_week.map(async(each_day)=>{
+            const existingDay = await Day.findOne(
+                {
+                    user_id:username_instance,
+                    day:each_day
+                }
+            )
+            if (!existingDay){
+                const create_profile = new Day({
+                    user_id: username_instance[0]._id,
+                    day: each_day,
+                    title: 'Categorize this day according to your liking'
+                })
+                create_profile.save()
+            }else{
+                console.log(`Skipping ${each_day} for ${username_instance[0].fullName}`)
+            }
+        })
+        res.status(200).json({
+            status:'successful',
+            message:'create_days'
+            })
+    }catch(err){ 
+        console.log("🚀 ~ exports.createDays=async ~ err:", err)
+        console.log('error')
+        }
+}
+exports.saveDayTitle = async(req, res) => {
+    try{
+        const {username, day, title} = req.body
+        const username_instance = await User.find({username:username})
+        const result = await Day.updateOne(
+            { user_id: username_instance[0]._id, day: day },
+            { title: title }
+        )
+        if (result.matchedCount === 0) {
+            console.log('No matching document found');
+            } else {
+            console.log('Document updated successfully');
+            res.status(200).json({
+                status:'successful',
+                message:'successful'
+            })
+            }
+            
+    } catch (error) {
+        console.error('Error updating document:', error);
+    }
+}   

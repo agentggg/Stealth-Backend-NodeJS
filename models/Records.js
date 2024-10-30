@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const Exercise = require('./Exercises');  // Ensure these paths are correct
-const User = require('./CustomUser');     // Ensure these paths are correct
 const today = new Date();
 const formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
 
@@ -13,7 +11,7 @@ const RecordsSchema = new mongoose.Schema({
     reps: { type: Number, default: 0 },
     time: { type: String, default: "05:21" },
     total_rest_time: { type: String, default: "17:32" },
-    day_of_week: { type: String, default: "Monday" },
+    day_of_week: { type: mongoose.Schema.Types.ObjectId, ref: 'Day' },
     date: {type: String, default: '11/27/2021'}
 });
 
