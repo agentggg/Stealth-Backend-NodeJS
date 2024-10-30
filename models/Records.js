@@ -11,7 +11,7 @@ const RecordsSchema = new mongoose.Schema({
     reps: { type: Number, default: 0 },
     time: { type: String, default: "05:21" },
     total_rest_time: { type: String, default: "17:32" },
-    day_of_week: { type: mongoose.Schema.Types.ObjectId, ref: 'Day' },
+    day_of_week: { type: String },
     date: {type: String, default: '11/27/2021'}
 });
 

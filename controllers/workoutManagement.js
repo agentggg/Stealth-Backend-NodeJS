@@ -4,16 +4,19 @@ const User = require('../models/CustomUser')
 const Tracker = require('../models/WorkoutTracker')
 const Day = require('../models/Days')
 
+
 exports.updateExercise = async (req, res) => {
     try {
         const { username, id, day } = req.params;
         const find_user = await User.findOne({ username: username });
         const workout_item = await Exercise.findOne({ _id: id });
         const workout_day = await Day.findOne({day:day, user_id:find_user._id})
-        const update = await Workouts.updateOne(
-            { user_id: find_user._id },
-            { $addToSet: { workouts: workout_item._id } } // Add workout only if it's not already in the array
-        );
+        const update = await Workouts.create({
+            user_id: find_user._id,
+            workouts: workout_item._id, 
+            day: workout_day
+        });
+        
         if (update.matchedCount === 0) {
             await Workouts.create({
                 user_id: find_user._id,
@@ -33,27 +36,19 @@ exports.updateExercise = async (req, res) => {
                 message: 'Workout created and tracker added'
             });
         }
-
-        // If the workout was already in the list but no tracker exists, create one
         const workoutDocument = await Workouts.findOne({ user_id: find_user._id });
-        const userWorkouts = workoutDocument.workouts;
-
-        // Loop through the user's workouts and check if a tracker exists for each workout
-        for (let workoutId of userWorkouts) {
-            const trackerExists = await Tracker.findOne({
+        const trackerExists = await Tracker.findOne({
+            user_id: find_user._id,
+            workout: workoutDocument._id
+        });
+        if (!trackerExists) {
+            await Tracker.create({
                 user_id: find_user._id,
-                workout: workoutId
-            });
-
-            if (!trackerExists) {
-                await Tracker.create({
-                    user_id: find_user._id,
-                    workout: workoutId,
-                    set: 0,
-                    rep: 0,
-                    day: workout_day._id
-                });
-            }
+                workout: workoutDocument._id,
+                set: 0,
+                rep: 0,
+                day: workout_day._id
+            }); 
         }
 
         return res.status(200).json({
@@ -80,13 +75,22 @@ exports.updateExercise = async (req, res) => {
 exports.getExercises = async(req, res) => {
     try{
         const username_param = req.params.username
+        const day_param = req.params.day
         const username_id = await User.findOne({username:username_param})
-        const my_workout_document = await Workouts.find({user_id:username_id._id}).populate('workouts')
+        const day_id  = await Day.findOne({ day:day_param, user_id:username_id}).populate('_id')
+        const my_workout_document = await Workouts.find({
+            user_id: username_id._id,
+            day: day_id._id
+          })
+            .populate('user_id')     
+            .populate('workouts')    
+            .populate('day');       
         res.status(200).json({ 
-            status:'success',
+            status:'success', 
             message:my_workout_document
         })
     } catch(err){
+        console.log("🚀 ~ exports.getExercises=async ~ err:", err)
         res.status(200).json({ 
             status:'error',
             message:'Error retrieving data'

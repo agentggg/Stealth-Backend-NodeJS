@@ -7,16 +7,11 @@ const moment = require('moment')
 exports.add = async (req, res) => {
     try{
         const { workout_id, username, sets, reps, time, total_rest_time } = req.body;
-        console.log("🚀 ~ exports.add= ~ total_rest_time:", total_rest_time)
-        console.log("🚀 ~ exports.add= ~ time:", time)
-        console.log("🚀 ~ exports.add= ~ reps:", reps)
-        console.log("🚀 ~ exports.add= ~ sets:", sets)
-        console.log("🚀 ~ exports.add= ~ username:", username)
-        console.log("🚀 ~ exports.add= ~ workout_id:", workout_id)
         const username_lookup = await User.findOne({ username: username });
         const exercise_lookup = await Exercise.findOne({ _id: workout_id });
         const today = moment();
         const day_of_week = today.format('dddd'); 
+
         create_record = await RecordStats.create({ 
             user_id:username_lookup,
             workouts:exercise_lookup,
@@ -33,7 +28,7 @@ exports.add = async (req, res) => {
         
     } catch(err){
         console.log("🚀 ~ exports.add= ~ err:", err)
-        res.send(500).json({
+        res.send(500).json({ 
             status:'failed',
             message:err
         })
