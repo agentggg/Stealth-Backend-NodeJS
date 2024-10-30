@@ -6,10 +6,10 @@ const Day = require('../models/Days')
 
 exports.updateExercise = async (req, res) => {
     try {
-        const { username, id } = req.params;
+        const { username, id, day } = req.params;
         const find_user = await User.findOne({ username: username });
         const workout_item = await Exercise.findOne({ _id: id });
-
+        const workout_day = await Day.findOne({day:day, user_id:find_user._id})
         const update = await Workouts.updateOne(
             { user_id: find_user._id },
             { $addToSet: { workouts: workout_item._id } } // Add workout only if it's not already in the array
@@ -50,7 +50,8 @@ exports.updateExercise = async (req, res) => {
                     user_id: find_user._id,
                     workout: workoutId,
                     set: 0,
-                    rep: 0
+                    rep: 0,
+                    day: workout_day._id
                 });
             }
         }
@@ -61,6 +62,7 @@ exports.updateExercise = async (req, res) => {
         });
 
     } catch (error) {
+        console.log("🚀 ~ exports.updateExercise= ~ error:", error)
         if (error.name === 'MongoServerError' && error.code === 11000) {
             return res.status(200).json({
                 status: 'success',
