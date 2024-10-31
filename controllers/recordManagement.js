@@ -6,7 +6,7 @@ const moment = require('moment')
 
 exports.add = async (req, res) => {
     try{
-        const { workout_id, username, sets, reps, time, total_rest_time } = req.body;
+        const { workout_id, username, sets, reps, time, total_rest_time, weight } = req.body;
         const username_lookup = await User.findOne({ username: username });
         const exercise_lookup = await Exercise.findOne({ _id: workout_id });
         const today = moment();
@@ -20,6 +20,7 @@ exports.add = async (req, res) => {
             time:time,
             total_rest_time:total_rest_time,
             day_of_week:day_of_week,
+            weight:weight
         })
         res.status(200).json({
             status:'success',
