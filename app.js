@@ -14,6 +14,7 @@ const usersRouter = require('./routes/users');
 const apiRouter = require('./routes/api');
 const workoutManagementRouter = require('./routes/workoutManagement');
 const recordsRouter = require('./routes/records');
+const maintenanceRouter = require('./routes/maintenance');
 
 
 const app = express();
@@ -51,6 +52,7 @@ app.use('/users', usersRouter);
 app.use('/api', apiRouter);
 app.use('/workout', workoutManagementRouter)
 app.use('/records', recordsRouter)
+app.use('/maintenance', maintenanceRouter)
 
 // app.use('/api', recordsRouter)
 

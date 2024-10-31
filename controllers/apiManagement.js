@@ -1,5 +1,5 @@
 const axios = require('axios')
-const savedExercise = require('../models/Exercises');
+const availableExercise = require('../models/Exercises');
 const User = require('../models/CustomUser')
 const Workout = require('../models/WorkoutManagement')
 
@@ -17,8 +17,8 @@ exports.all_exercises = async (req, res) => {
         let created = 0;
 
         await Promise.all(result.map(async (eachItem) => {
-            const existingDocument = await savedExercise.findOne({ id: eachItem.id });
-            const databaseEntry = await savedExercise.findOneAndUpdate(
+            const existingDocument = await availableExercise.findOne({ id: eachItem.id });
+            const databaseEntry = await availableExercise.findOneAndUpdate(
                 { id: eachItem.id },
                 eachItem,
                 { upsert: true, new: true, setDefaultsOnInsert: true }
@@ -50,7 +50,7 @@ exports.all_exercises = async (req, res) => {
 exports.specific_target_exercise = async(req, res) => {
     const name = (req.params.name)
     try {
-        const response = await savedExercise.find({ target: name}).exec();
+        const response = await availableExercise.find({ target: name}).exec();
         // delete response[0].bodyPart
         if (response.length != 0){
             res.status (200).json({
@@ -75,7 +75,7 @@ exports.specific_target_exercise = async(req, res) => {
 
 exports.targeted_list = async(req, res) => {
     try {
-        result = await savedExercise.find({}, 'bodyPart -_id').exec()
+        result = await availableExercise.find({}, 'bodyPart -_id').exec()
         let response = []
         result.map((eachItem)=>{
             if (!response.includes(eachItem.bodyPart)){
@@ -106,7 +106,7 @@ exports.targeted_list = async(req, res) => {
 exports.all_filtered_list = async(req, res) => {
     const filter = req.params.filter_by
     try {
-        result = await savedExercise.find({}, `${filter} -_id`).exec()
+        result = await availableExercise.find({}, `${filter} -_id`).exec()
         let response = []
         result.map((eachItem)=>{
             if (!response.includes(eachItem[filter])){
@@ -135,36 +135,35 @@ exports.all_filtered_list = async(req, res) => {
 }
 
 exports.all_filtered_list_exercises = async(req, res) => {
-    const category_selected = req.query.name
-    const filter_criteria = req.query.filter_criteria 
-    const username = req.query.username;
+    const filter_criteria = req.params.bodypart 
+    const username = req.params.username;
+    let response 
     try {
         username_instance = await User.findOne({username:username})     
         let user_subscribed_workouts = await Workout.find(
             { user_id: username_instance },
             { workouts: 1, _id: 0 }
-        ).exec();
+        );
+        
         if (user_subscribed_workouts.length > 0){
-             global.response = await savedExercise.find(
+            response = await availableExercise.find(
                 {
-                    [category_selected]: filter_criteria,
+                    bodyPart: filter_criteria,
                     _id: { $nin: user_subscribed_workouts[0]['workouts'] }  // Exclude workouts user is subscribed to
                 }
-            ).exec();
+            );
         } 
         else{
-             global.response = await savedExercise.find(
+            response = await availableExercise.find(
                 {
-                    [category_selected]: filter_criteria,
+                    bodyPart: filter_criteria,
                 }
-            ).exec();
+            );
         }
-
-
-        if (global.response.length != 0){
+        if (response.length != 0){
             res.status (200).json({
                 status: 'success',
-                message: global.response
+                message: response
             })
         }
         else{
@@ -186,8 +185,7 @@ exports.custom_filter = async(req, res) => {
     const filterType = req.params.filter_name
     const filterCriteria = req.params.filter
     try{
-        const response = await savedExercise.find({[filterType]:filterCriteria}).exec()
-        console.log(response)
+        const response = await availableExercise.find({[filterType]:filterCriteria}).exec()
         if (response.length < 1) {
             throw new Error('No value found')
         }
@@ -207,7 +205,7 @@ exports.custom_filter = async(req, res) => {
 
 
 exports.default_packages = async(req, res) => {
-    const all = await savedExercise.find({})
+    const all = await availableExercise.find({})
     let bodyParts = await axios('http://127.0.0.1:3000/api/all_filtered_list/bodyPart')
     bodyParts = bodyParts.data.message
     bodyParts.forEach((eachPart) => {

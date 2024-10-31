@@ -19,3 +19,4 @@ const RecordsSchema = new mongoose.Schema({
 const RecordStats = mongoose.model('RecordStats', RecordsSchema);
 
 module.exports = RecordStats;
+ 
