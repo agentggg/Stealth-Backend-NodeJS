@@ -73,29 +73,25 @@ exports.updateExercise = async (req, res) => {
     }
 };
 exports.getExercises = async(req, res) => {
+    var response = "Error"
     try{
         const username_param = req.params.username
         const day_param = req.params.day
         const username_id = await User.findOne({username:username_param})
         const day_id  = await Day.findOne({ day:day_param, user_id:username_id}).populate('_id')
-        const my_workout_document = await Workouts.find({
+        response = await Workouts.find({
             user_id: username_id._id,
             day: day_id._id
           })
-            .populate('user_id')     
             .populate('workouts')    
-            .populate('day');       
-        res.status(200).json({ 
-            status:'success', 
-            message:my_workout_document
-        })
+
     } catch(err){
         console.log("🚀 ~ exports.getExercises=async ~ err:", err)
-        res.status(200).json({ 
-            status:'error',
-            message:'Error retrieving data'
-        })
     }
+    res.status(200).json({ 
+        status:'success', 
+        message:response
+    })
 }     
 exports.getDays = async(req, res) => {
     try{
