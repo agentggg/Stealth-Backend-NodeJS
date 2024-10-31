@@ -3,6 +3,7 @@ const Exercise = require('../models/Exercises');
 const User = require('../models/CustomUser')
 const Tracker = require('../models/WorkoutTracker')
 const Day = require('../models/Days')
+const mongoose = require('mongoose');
 
 
 exports.updateExercise = async (req, res) => {
@@ -165,3 +166,29 @@ exports.saveDayTitle = async(req, res) => {
         console.error('Error updating document:', error);
     }
 }   
+exports.deleteExercise = async(req, res) => {
+    let response
+    try{
+        const {username, workout} = req.params
+        const find_user = await User.findOne({ username: username });
+        const objectId = new mongoose.Types.ObjectId(workout);
+        const delete_workout = await Workouts.deleteOne({workouts:objectId, user_id:find_user._id})
+        if (delete_workout.deletedCount !== 0){
+            response = "successful"
+        }
+        else {
+            response = "failed"
+        }
+        console.log("🚀 ~ exports.deleteExercise ~ delete_workout:", delete_workout)
+    }catch(err){
+        console.log("🚀 ~ exports.deleteExercise ~ err:", err)
+    }
+    res.status(200).json({
+        status:'successful',
+        message:response
+    })
+
+
+
+    
+}
