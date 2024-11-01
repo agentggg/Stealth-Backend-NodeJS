@@ -13,7 +13,8 @@ const RecordsSchema = new mongoose.Schema({
     time: { type: String, default: "05:21" },
     total_rest_time: { type: String, default: "17:32" },
     day_of_week: { type: String },
-    date: {type: String, default: '11/27/2021'}
+    date: {type: String, default: '11/27/2021'},
+    workoutIntensisty: {type: String, default: 'Lightweight'}
 });
 
 // Export as 'RecordStats'
