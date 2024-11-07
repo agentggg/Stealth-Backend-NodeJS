@@ -82,7 +82,7 @@ exports.getExercises = async(req, res) => {
         const username_id = await User.findOne({username:username_param})
         const day_id  = await Day.findOne({ day:day_param, user_id:username_id}).populate('_id')
         response = await Workouts.find({user_id: username_id._id, day: day_id._id}).populate('workouts');
-        response = await Records.find({ user_id: username_id }).populate('workouts');
+        // response = await Records.find({ user_id: username_id }).populate('workouts');
         // console.log("🚀 ~ exports.getExercises=async ~ workout_record:", workout_record)
         
         // const matchedWorkouts = enrolled_workout.map((each_enrolled_workout) => {
