@@ -4,6 +4,7 @@ const User = require('../models/CustomUser')
 const Tracker = require('../models/WorkoutTracker')
 const Day = require('../models/Days')
 const mongoose = require('mongoose');
+const Records = require('../models/Records')
 
 
 exports.updateExercise = async (req, res) => {
@@ -74,23 +75,32 @@ exports.updateExercise = async (req, res) => {
     }
 };
 exports.getExercises = async(req, res) => {
-    var response = "Error"
     try{
+        var response = "Error"
         const username_param = req.params.username
         const day_param = req.params.day
         const username_id = await User.findOne({username:username_param})
         const day_id  = await Day.findOne({ day:day_param, user_id:username_id}).populate('_id')
-        response = await Workouts.find({
-            user_id: username_id._id,
-            day: day_id._id
-          })
-            .populate('workouts')    
-
+        response = await Workouts.find({user_id: username_id._id, day: day_id._id}).populate('workouts');
+        response = await Records.find({ user_id: username_id }).populate('workouts');
+        // console.log("🚀 ~ exports.getExercises=async ~ workout_record:", workout_record)
+        
+        // const matchedWorkouts = enrolled_workout.map((each_enrolled_workout) => {
+        //     return workout_record.filter((each_workout_record) => {
+        //         // Ensure each_workout_record.workouts is not null before calling some
+        //         return each_workout_record.workouts && each_workout_record.workouts.some(
+        //             (recordedWorkout) => recordedWorkout._id.equals(each_enrolled_workout.workouts._id)
+        //         );
+        //     });
+        // });
+        
+        // console.log("🚀 ~ matchedWorkouts:", matchedWorkouts);
+        
     } catch(err){
         console.log("🚀 ~ exports.getExercises=async ~ err:", err)
-    }
+    } 
     res.status(200).json({ 
-        status:'success', 
+        status:'records', 
         message:response
     })
 }     
@@ -191,4 +201,31 @@ exports.deleteExercise = async(req, res) => {
 
 
     
+}
+exports.getAllWorkout = async(req, res) => {
+    try{
+        var response
+        const username  = req.params.username
+        username_section = await User.find({username:username})
+        response = await Workouts.find({ user_id: username_section[0]._id })
+        .populate({
+            path: 'workouts', // Populate workout details
+            model: 'Exercise'
+        })
+        .populate({
+            path: 'day', // Populate day details
+            model: 'Day'
+        });
+        res.status(200).json({
+            status:'successful',
+            message:response
+        })
+    }catch(err){
+        console.log("🚀 ~ exports.getAllWorkout=async ~ error:", err)      
+        res.status(200).json({
+            status:'successful',
+            message:err
+        })
+    }
+
 }

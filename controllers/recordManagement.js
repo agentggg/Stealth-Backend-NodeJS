@@ -6,11 +6,9 @@ const moment = require('moment')
 
 exports.add = async (req, res) => {
     try{
-        const { workout_id, username, sets, reps, time, total_rest_time, weight, workoutIntensisty } = req.body;
+        const { workout_id, username, sets, reps, time, total_rest_time, weight, workoutIntensity, day_of_week, date } = req.body;
         const username_lookup = await User.findOne({ username: username });
         const exercise_lookup = await Exercise.findOne({ _id: workout_id });
-        const today = moment();
-        const day_of_week = today.format('dddd'); 
 
         create_record = await RecordStats.create({ 
             user_id:username_lookup,
@@ -21,7 +19,8 @@ exports.add = async (req, res) => {
             total_rest_time:total_rest_time,
             day_of_week:day_of_week,
             weight:weight,
-            workoutIntensisty:workoutIntensisty
+            workoutIntensity:workoutIntensity,
+            date:date
         })
         res.status(200).json({
             status:'success',
@@ -35,9 +34,7 @@ exports.add = async (req, res) => {
             message:err
         })
     } 
-}
-  
-
+}  
 
 exports.analytics = async(req, res) => {
     username = req.query.username
