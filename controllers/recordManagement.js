@@ -63,3 +63,15 @@ exports.analytics = async(req, res) => {
         data:response
     })
 }
+
+exports.set_history = async(req, res) => {
+    username = req.query.username
+    workout_id = req.query.workout_id    
+    username_instance = await User.find({username:username})
+    stat = await RecordStats.find({user_id:username_instance[0]._id})
+    response = stat.slice(-1)
+    res.status(200).json({
+        status:'successful',
+        data:response
+    })
+}
