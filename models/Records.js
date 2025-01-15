@@ -10,7 +10,6 @@ const RecordsSchema = new mongoose.Schema({
     sets: { type: Number, default: 0 },
     reps: { type: Number, default: 0 },
     weight: { type: Number, default: 0 },
-    time: { type: String},
     day_of_week: { type: String },
     date: {type: String},
     workoutIntensity: {type: String}

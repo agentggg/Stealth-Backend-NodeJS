@@ -2,8 +2,6 @@ const User = require('../models/CustomUser');
 const Token = require('../models/AuthToken');
 const crypto = require('crypto');
 const debugAuth = require('debug')('api:auth')
-const debugTshoot = require('debug')('api:tshhot')
-const SendEmail = require('../shared/SendEmail')
 
 function generateRandomToken(size = 48) {
     return crypto.randomBytes(size).toString('hex');
@@ -71,15 +69,9 @@ exports.login = async (req, res) => {
         });
     }
     try {
-        // checking if {username exist, if the account is active, }
         const userProfile = await User.findOne({ username }).populate('accessLevel', 'name'); 
-        // SendEmail(userProfile.email, 'Sending Email using Node.js', 'That was easy!', function(err, response) {
-        //     if (err) {
-        //     console.log('Error:', err);
-        //     } else {
-        //     console.log('Success:', response);
-        //     }
-        // });
+        console.log("🚀 ~ exports.login= ~ userProfile:", userProfile)
+
         if (!userProfile) {
             debugAuth('Incorrect username')
             return res.status(200).json({

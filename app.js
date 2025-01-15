@@ -29,6 +29,7 @@ app.set('port', port);
 async function connectDB() {
   try {
     await mongoose.connect('mongodb+srv://development:Gq9a9ijoDAJFruOm@r-nation.95mnxgm.mongodb.net/Stealth_DEV');
+    // await mongoose.connect('mongodb://localhost:27017/LionsDen');
     debugDb('Database connected successfully');
   } catch (error) {
     debugDb('Database connection error:', error);

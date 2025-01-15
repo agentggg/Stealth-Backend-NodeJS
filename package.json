@@ -7,8 +7,9 @@
     "dev": "DEBUG=api:* nodemon app.js"
   },
   "dependencies": {
-    "@adminjs/express": "^6.1.0",
+    "@adminjs/express": "^6.1.1",
     "@adminjs/mongoose": "^4.1.0",
+    "adminjs": "^7.8.15",
     "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "~1.4.4",

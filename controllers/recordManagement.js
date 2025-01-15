@@ -6,7 +6,8 @@ const moment = require('moment')
 
 exports.add = async (req, res) => {
     try{
-        const { workout_id, username, sets, reps, time, total_rest_time, weight, workoutIntensity, day_of_week, date } = req.body;
+        const { workout_id, username, sets, reps,  weight, workoutIntensity, day_of_week, date } = req.body;
+        console.log("🚀 ~ exports.add= ~ weight:", weight)
         const username_lookup = await User.findOne({ username: username });
         const exercise_lookup = await Exercise.findOne({ _id: workout_id });
 
@@ -15,7 +16,6 @@ exports.add = async (req, res) => {
             workouts:exercise_lookup,
             sets:sets,
             reps:reps,
-            time:time,
             day_of_week:day_of_week,
             weight:weight,
             workoutIntensity:workoutIntensity,
