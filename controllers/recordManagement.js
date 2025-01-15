@@ -7,10 +7,8 @@ const moment = require('moment')
 exports.add = async (req, res) => {
     try{
         const { workout_id, username, sets, reps, time, total_rest_time, weight, workoutIntensity, day_of_week, date } = req.body;
-        console.log("🚀 ~ exports.add= ~ req.body:", req.body)
         const username_lookup = await User.findOne({ username: username });
         const exercise_lookup = await Exercise.findOne({ _id: workout_id });
-        console.log("🚀 ~ exports.add= ~ exercise_lookup:", exercise_lookup)
 
         create_record = await RecordStats.create({ 
             user_id:username_lookup,

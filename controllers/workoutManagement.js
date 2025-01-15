@@ -75,6 +75,7 @@ exports.updateExercise = async (req, res) => {
     }
 };
 exports.getExercises = async(req, res) => {
+    console.log("🚀 ~ exports.getExercises=async ~ req:", req.params)
     try{
         var response = "Error"
         const username_param = req.params.username
@@ -82,20 +83,6 @@ exports.getExercises = async(req, res) => {
         const username_id = await User.findOne({username:username_param})
         const day_id  = await Day.findOne({ day:day_param, user_id:username_id}).populate('_id')
         response = await Workouts.find({user_id: username_id._id, day: day_id._id}).populate('workouts');
-        // response = await Records.find({ user_id: username_id }).populate('workouts');
-        // console.log("🚀 ~ exports.getExercises=async ~ workout_record:", workout_record)
-        
-        // const matchedWorkouts = enrolled_workout.map((each_enrolled_workout) => {
-        //     return workout_record.filter((each_workout_record) => {
-        //         // Ensure each_workout_record.workouts is not null before calling some
-        //         return each_workout_record.workouts && each_workout_record.workouts.some(
-        //             (recordedWorkout) => recordedWorkout._id.equals(each_enrolled_workout.workouts._id)
-        //         );
-        //     });
-        // });
-        
-        // console.log("🚀 ~ matchedWorkouts:", matchedWorkouts);
-        
     } catch(err){
         console.log("🚀 ~ exports.getExercises=async ~ err:", err)
     } 
@@ -126,7 +113,7 @@ exports.createDays = async(req, res) => {
     try{
         const username =  req.params.username
         const username_instance = await User.find({username:username})
-        const days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        const days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "Stretch"]
         days_of_week.map(async(each_day)=>{
             const existingDay = await Day.findOne(
                 {
@@ -138,7 +125,7 @@ exports.createDays = async(req, res) => {
                 const create_profile = new Day({
                     user_id: username_instance[0]._id,
                     day: each_day,
-                    title: 'Categorize this day according to your liking'
+                    title: 'Label this day based on your workout focus.'
                 })
                 create_profile.save()
             }else{
