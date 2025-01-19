@@ -2,9 +2,14 @@
   "name": "backend",
   "version": "0.0.0",
   "private": true,
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "DEBUG=api:* nodemon app.js"
+    "dev": "DEBUG=api:* nodemon app.js",
+    "heroku-postbuild": "npm install --production"
   },
   "dependencies": {
     "@adminjs/express": "^6.1.1",
