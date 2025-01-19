@@ -1,16 +1,10 @@
-const axios = require('axios');
-const User = require('../models/CustomUser');
 const RecordStats = require('../models/Records');
-const Tracker = require('../models/WorkoutTracker');
-const { ChartJSNodeCanvas } = require('chartjs-node-canvas');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
 // Chart canvas setup
-const width = 800;
-const height = 600;
-const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height });
+
 require('dotenv').config();
 
 const sendEmailWithAttachment = async (recipients, subject, text, attachmentPath) => {
@@ -140,6 +134,8 @@ Please review it thoroughly and let’s collaborate on enhancing the training st
         }
     });
 };
+
+// make this dynamic, versus one user
 exports.weekly_report = async (req, res) => {
     try {
         const reports = [];
@@ -187,6 +183,59 @@ exports.weekly_report = async (req, res) => {
         res.status(500).send({ status: 'failed', message: 'Failed to generate workout report' });
     }
 };
+
+exports.yesterday_report = async (req, res) => {
+    try{
+        const {username} = req.body
+        const today = new Date();
+        const sevenDaysAgo = new Date();
+        const yesterday = new Date();
+        
+        // Adjust the dates
+        sevenDaysAgo.setDate(today.getDate() - 8); // Exclude today from the range
+        yesterday.setDate(today.getDate() - 1);
+        const dayName = yesterday.toLocaleDateString('en-US', { weekday: 'long' });
+
+        // Format the dates as MM/DD/YYYY
+        const formatDate = (date) => date.toLocaleDateString('en-US', {
+          month: '2-digit',
+          day: '2-digit',
+          year: 'numeric',
+        });
+        
+        const formattedYesterday = formatDate(yesterday);        
+        const formattedSevenDaysAgo = formatDate(sevenDaysAgo);
+        const all_stats = await RecordStats.find({}).populate('user_id').populate('workouts')
+        const yesterdays_report = all_stats.filter((each_workout)=> {
+            if (
+                (each_workout.user_id.username == username) 
+                && (each_workout.date == formattedYesterday)
+                && (each_workout.day_of_week == dayName)
+            ){
+                return true
+            }
+        })
+        const last_week_report = all_stats.filter((each_workout)=> {
+            if (
+                (each_workout.user_id.username == username) 
+                && (each_workout.date == formattedSevenDaysAgo)
+                && (each_workout.day_of_week == dayName)
+            ){
+                return true
+            }
+        })
+        const response = [
+            {"yesterdays_report":yesterdays_report},
+            {"last_week_report":last_week_report}
+        ] 
+        res.status(200).send({ status: 'success', message: response });
+    }
+
+    catch (error) {
+        console.error('Error in weekly_report:', error);
+        res.status(500).send({ status: 'failed', message: 'Failed to generate workout report' });
+    }
+}
 
 
 
