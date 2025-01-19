@@ -129,8 +129,8 @@ Please review it thoroughly and let’s collaborate on enhancing the training st
 
         try {
             await sendEmailWithAttachment(
-                ['gersard@yahoo.com'],
-                // ['deeirdra21@gmail.com', 'gersard@yahoo.com'],
+                // ['gersard@yahoo.com'],
+                ['deeirdra21@gmail.com', 'gersard@yahoo.com'],
                 'The Lions Den Workout Summary',
                 emailMessage,
                 pdfPath
@@ -181,7 +181,7 @@ exports.weekly_report = async (req, res) => {
         }
     
         await generate_report(reports);
-        res.status(200).send({ status: 'success', message: reports });
+        res.status(200).send({ status: 'success', message: "Successfully sent the report out" });
     } catch (error) {
         console.error('Error in weekly_report:', error);
         res.status(500).send({ status: 'failed', message: 'Failed to generate workout report' });
