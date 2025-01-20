@@ -237,6 +237,63 @@ exports.yesterday_report = async (req, res) => {
     }
 }
 
+exports.today_report = async (req, res) => {
+    try {
+      const { username } = req.body;
+      const today = new Date();
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(today.getDate() - 7);
+  
+      const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+  
+      const formatDate = (date) => date.toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+      });
+  
+      const formattedToday = formatDate(today);
+      const formattedSevenDaysAgo = formatDate(sevenDaysAgo);
+  
+      const all_stats = await RecordStats.find({})
+        .populate({
+          path: 'user_id',
+          select: 'username email fullName',
+        })
+        .populate({
+          path: 'workouts',
+          select: 'name bodyPart equipment gifUrl',
+        })
+        .lean();
+  
+      const today_report = all_stats.filter((stat) =>
+        stat.user_id.username === username &&
+        stat.date === formattedToday &&
+        stat.day_of_week === dayName
+      );
+  
+      const last_week_report = all_stats.filter((stat) =>
+        stat.user_id.username === username &&
+        stat.date === formattedSevenDaysAgo &&
+        stat.day_of_week === dayName
+      );
+  
+      const response = [
+        { today_report },
+        { last_week_report },
+      ];
+  
+  
+      res.status(200).json({
+        status: 'success',
+        message: response,
+      });
+    } catch (error) {
+      console.error('Error in today_report:', error);
+      res.status(500).send({ status: 'error', message: 'An error occurred' });
+    }
+  };
+  
 
 
 
