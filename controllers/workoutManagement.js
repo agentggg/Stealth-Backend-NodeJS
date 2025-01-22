@@ -75,11 +75,11 @@ exports.updateExercise = async (req, res) => {
     }
 };
 exports.getExercises = async(req, res) => {
-    console.log("🚀 ~ exports.getExercises=async ~ req:", req.params)
     try{
         var response = "Error"
         const username_param = req.params.username
-        const day_param = req.params.day
+        // const day_param = req.params.day
+        const day_param = "Tuesday"
         const username_id = await User.findOne({username:username_param})
         const day_id  = await Day.findOne({ day:day_param, user_id:username_id}).populate('_id')
         response = await Workouts.find({user_id: username_id._id, day: day_id._id}).populate('workouts');

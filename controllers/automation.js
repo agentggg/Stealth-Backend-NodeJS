@@ -255,7 +255,7 @@ exports.today_report = async (req, res) => {
       const formattedToday = formatDate(today);
       const formattedSevenDaysAgo = formatDate(sevenDaysAgo);
   
-      const all_stats = await RecordStats.find({})
+      const stats = await RecordStats.find({})
         .populate({
           path: 'user_id',
           select: 'username email fullName',
@@ -265,7 +265,22 @@ exports.today_report = async (req, res) => {
           select: 'name bodyPart equipment gifUrl',
         })
         .lean();
-  
+        const all_stats = stats.map(stat => {
+            const sortedWorkouts = Array.isArray(stat.workouts)
+              ? stat.workouts.sort((a, b) => {
+                  if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+                  if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+                  return 0;
+                })
+              : []; // If workouts is not an array, fallback to an empty array
+          
+            return {
+              ...stat,
+              workouts: sortedWorkouts,
+            };
+          });
+          
+
       const today_report = all_stats.filter((stat) =>
         stat.user_id.username === username &&
         stat.date === formattedToday &&
