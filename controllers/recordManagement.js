@@ -7,7 +7,6 @@ const moment = require('moment')
 exports.add = async (req, res) => {
     try{
         const { workout_id, username, sets, reps,  weight, workoutIntensity, day_of_week, date } = req.body;
-        console.log("🚀 ~ exports.add= ~ weight:", weight)
         const username_lookup = await User.findOne({ username: username });
         const exercise_lookup = await Exercise.findOne({ _id: workout_id });
 
@@ -65,8 +64,9 @@ exports.analytics = async(req, res) => {
 exports.set_history = async(req, res) => {
     username = req.query.username
     workout_id = req.query.workout_id    
+    exercise_instance = await Exercise.find({id:workout_id})
     username_instance = await User.find({username:username})
-    stat = await RecordStats.find({user_id:username_instance[0]._id})
+    stat = await RecordStats.find({user_id:username_instance[0]._id, workouts:exercise_instance})
     response = stat.slice(-1)
     res.status(200).json({
         status:'successful',

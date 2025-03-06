@@ -15,6 +15,7 @@ const apiRouter = require('./routes/api');
 const workoutManagementRouter = require('./routes/workoutManagement');
 const recordsRouter = require('./routes/records');
 const maintenanceRouter = require('./routes/maintenance');
+const automationeRouter = require('./routes/automation');
 
 
 const app = express();
@@ -54,6 +55,7 @@ app.use('/api', apiRouter);
 app.use('/workout', workoutManagementRouter)
 app.use('/records', recordsRouter)
 app.use('/maintenance', maintenanceRouter)
+app.use('/automation', automationeRouter)
 
 // app.use('/api', recordsRouter)
 

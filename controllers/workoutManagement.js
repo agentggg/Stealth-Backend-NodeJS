@@ -4,7 +4,9 @@ const User = require('../models/CustomUser')
 const Tracker = require('../models/WorkoutTracker')
 const Day = require('../models/Days')
 const mongoose = require('mongoose');
-const Records = require('../models/Records')
+const Records = require('../models/Records');
+const RecordStats = require('../models/Records');
+const { ObjectId } = mongoose.Types;
 
 
 exports.updateExercise = async (req, res) => {
@@ -75,14 +77,21 @@ exports.updateExercise = async (req, res) => {
     }
 };
 exports.getExercises = async(req, res) => {
-    console.log("🚀 ~ exports.getExercises=async ~ req:", req.params)
     try{
-        var response = "Error"
+        var data = "Error"
+        var response = []
         const username_param = req.params.username
         const day_param = req.params.day
         const username_id = await User.findOne({username:username_param})
         const day_id  = await Day.findOne({ day:day_param, user_id:username_id}).populate('_id')
-        response = await Workouts.find({user_id: username_id._id, day: day_id._id}).populate('workouts');
+        data = await Workouts.find({user_id: username_id._id, day: day_id._id}).populate('workouts');
+        for (const eachData of data) {
+            const tmpData = {}
+            const workoutSet = await (await RecordStats.find({workouts:eachData.workouts['_id']})).pop()
+            tmpData.data = eachData
+            tmpData.previous_set = workoutSet
+            response.push(tmpData)
+        }
     } catch(err){
         console.log("🚀 ~ exports.getExercises=async ~ err:", err)
     } 
