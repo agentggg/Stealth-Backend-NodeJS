@@ -70,7 +70,6 @@ exports.login = async (req, res) => {
     }
     try {
         const userProfile = await User.findOne({ username }).populate('accessLevel', 'name'); 
-        console.log("🚀 ~ exports.login= ~ userProfile:", userProfile)
 
         if (!userProfile) {
             debugAuth('Incorrect username')
@@ -95,14 +94,7 @@ exports.login = async (req, res) => {
             const retrieveUsernameLastLoginTime = retrieveUsernameInstance.lastLoginAttempt
             const futureTime = new Date(now + 1 * 60 * 1000); // 30 minutes in the future
             const retrieveUsernameRetryValue = retrieveUsernameInstance.accountRetry + 1
-            console.log("🚀 ~ exports.login= ~ retrieveUsernameRetryValue:", retrieveUsernameRetryValue)
             const updatedTime = new Date(retrieveUsernameLastLoginTime.getTime() + LOCK_DURATION);
-            // console.log("🚀 ~ exports.login= ~ updatedTime:", updatedTime)
-            // debugTshoot("🚀 ~ exports.login= ~ updatedTime:", updatedTime)
-            // debugTshoot("🚀 ~ exports.login= ~ retrieveUsernameLastLoginTime:", retrieveUsernameLastLoginTime)
-            // debugTshoot("🚀 ~ exports.login= ~ currentTime:", currentTime)
-            // debugTshoot("🚀 ~ exports.login= ~ futureTime:", futureTime)
-
             
             if (retrieveUsernameRetryValue === 4) {
                 debugAuth('Account is now deactivated for 30 minutes');
@@ -178,5 +170,45 @@ exports.login = async (req, res) => {
             message: 'An unexpected error occurred'
         });
     }
+};
+
+
+exports.passwordReset = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    const userProfile = await User.findOne({ username, email });
+    if (!userProfile) {
+      return res.status(404).json({
+        status: "failed",
+        message: "User not found"
+      });
+    }
+
+    // IMPORTANT: save the password the user provided
+    userProfile.password = password;
+    userProfile.accountRetry = 0;
+    userProfile.isActive = true;
+
+    await userProfile.save();
+
+    // Optional: rotate token (safe + avoids duplicate key error)
+    await Token.findOneAndUpdate(
+      { user_id: userProfile._id },
+      { key: generateRandomToken() },
+      { upsert: true }
+    );
+
+    return res.status(200).json({
+      status: "success",
+      message: "Password reset successful"
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      status: "failed",
+      message: error.message
+    });
+  }
 };
 
