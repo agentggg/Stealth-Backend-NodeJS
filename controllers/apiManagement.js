@@ -72,7 +72,7 @@ exports.specific_target_exercise = async(req, res) => {
         });
     }
 }
-
+// https://ltd-pas-love-guru.trycloudflare.com
 exports.targeted_list = async(req, res) => {
     try {
         result = await availableExercise.find({}, 'bodyPart -_id').exec()
