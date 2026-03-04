@@ -16,6 +16,7 @@ const workoutManagementRouter = require('./routes/workoutManagement');
 const recordsRouter = require('./routes/records');
 const maintenanceRouter = require('./routes/maintenance');
 const automationeRouter = require('./routes/automation');
+const automationController = require('./controllers/automation');
 
 
 const app = express();
@@ -58,6 +59,68 @@ app.use('/maintenance', maintenanceRouter)
 app.use('/automation', automationeRouter)
 
 // app.use('/api', recordsRouter)
+
+let weeklySchedulerStarted = false;
+let lastWeeklyRunDate = '';
+const weeklyScheduleTimeZone = process.env.WEEKLY_REPORT_TIMEZONE || 'Etc/GMT+5'; // Fixed EST (UTC-5)
+
+function getZonedParts(date, timeZone) {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(date);
+  const map = {};
+  parts.forEach((part) => {
+    if (part.type !== 'literal') map[part.type] = part.value;
+  });
+  return map;
+}
+
+function getDateKey(parts) {
+  const year = parts.year;
+  const month = parts.month;
+  const day = parts.day;
+  return `${year}-${month}-${day}`;
+}
+
+function maybeRunWeeklyEmailJob() {
+  const now = new Date();
+  const zoned = getZonedParts(now, weeklyScheduleTimeZone);
+  const isSaturday = zoned.weekday === 'Sat';
+  const isTwoAM = zoned.hour === '02';
+  const isMinuteZero = zoned.minute === '00';
+  const todayKey = getDateKey(zoned);
+
+  if (!isSaturday || !isTwoAM || !isMinuteZero) return;
+  if (lastWeeklyRunDate === todayKey) return;
+
+  lastWeeklyRunDate = todayKey;
+  automationController.run_weekly_report_job()
+    .then((result) => {
+      console.log(`[Scheduler] Weekly report job ran at ${now.toISOString()} | emails sent: ${result.sentCount}`);
+    })
+    .catch((error) => {
+      console.error('[Scheduler] Weekly report job failed:', error);
+    });
+}
+
+function initWeeklyScheduler() {
+  const schedulerEnabled = String(process.env.WEEKLY_REPORT_SCHEDULER || 'true').toLowerCase() !== 'false';
+  if (!schedulerEnabled || weeklySchedulerStarted) return;
+
+  weeklySchedulerStarted = true;
+  setInterval(maybeRunWeeklyEmailJob, 60 * 1000);
+  console.log(`[Scheduler] Weekly report scheduler enabled: Saturdays at 2:00 AM (${weeklyScheduleTimeZone}).`);
+}
+
+initWeeklyScheduler();
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

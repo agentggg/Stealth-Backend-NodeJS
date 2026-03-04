@@ -472,6 +472,11 @@ exports.weekly_report = async (req, res) => {
     }
 };
 
+exports.run_weekly_report_job = async () => {
+    const { sentCount } = await sendWeeklyReports();
+    return { sentCount };
+};
+
 exports.weekly_report_test = async (req, res) => {
     try {
         const targetEmail = req.body?.email || 'deeirdra21@gmail.com';
