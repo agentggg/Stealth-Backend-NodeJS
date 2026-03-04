@@ -1,5 +1,6 @@
 const RecordStats = require('../models/Records');
 const Workouts = require('../models/WorkoutManagement');
+const User = require('../models/CustomUser');
 const nodemailer = require('nodemailer');
 
 require('dotenv').config();
@@ -347,6 +348,13 @@ const sendWeeklyReports = async ({ targetEmail, targetUsername } = {}) => {
         .populate('workouts', 'name bodyPart')
         .lean();
 
+    const userQuery = {};
+    if (targetEmail) userQuery.email = targetEmail;
+    if (targetUsername) userQuery.username = targetUsername;
+    if (!targetEmail && !targetUsername) userQuery.isActive = true;
+
+    const allUsers = await User.find(userQuery, 'fullName email username isActive').lean();
+
     const allCommitments = await Workouts.find({})
         .populate('user_id', 'email username')
         .populate('day', 'day')
@@ -371,28 +379,17 @@ const sendWeeklyReports = async ({ targetEmail, targetUsername } = {}) => {
         recordsByUser.get(userId).push({ ...record, _parsedDate: recordDate });
     });
 
-    const targetEmailNormalized = targetEmail ? String(targetEmail).trim().toLowerCase() : '';
-    const targetUsernameNormalized = targetUsername ? String(targetUsername).trim().toLowerCase() : '';
-
     let sentCount = 0;
     const sentTo = [];
 
-    for (const [, records] of recordsByUser.entries()) {
-        const user = records[0].user_id;
+    for (const user of allUsers) {
         if (!user?.email) continue;
+        const userRecords = recordsByUser.get(user._id.toString()) || [];
 
-        const matchesTargetEmail = targetEmailNormalized
-            ? String(user.email).trim().toLowerCase() === targetEmailNormalized
-            : true;
-        const matchesTargetUsername = targetUsernameNormalized
-            ? String(user.username || '').trim().toLowerCase() === targetUsernameNormalized
-            : true;
-        if (!matchesTargetEmail || !matchesTargetUsername) continue;
-
-        const currentWeekRecords = records
+        const currentWeekRecords = userRecords
             .filter((record) => record._parsedDate >= currentWeekStart && record._parsedDate <= today)
             .sort((a, b) => b._parsedDate - a._parsedDate);
-        const previousWeekRecords = records.filter((record) => record._parsedDate >= previousWeekStart && record._parsedDate <= previousWeekEnd);
+        const previousWeekRecords = userRecords.filter((record) => record._parsedDate >= previousWeekStart && record._parsedDate <= previousWeekEnd);
 
         const summarize = (items) => {
             const totalSets = items.reduce((sum, item) => sum + (Number(item.sets) || 0), 0);
@@ -411,7 +408,7 @@ const sendWeeklyReports = async ({ targetEmail, targetUsername } = {}) => {
         const currentStats = summarize(currentWeekRecords);
         const previousStats = summarize(previousWeekRecords);
 
-        const committedSet = userCommitmentDays.get(user._id.toString()) || new Set();
+        const committedSet = userCommitmentDays.get(String(user._id)) || new Set();
         const committedDays = Array.from(committedSet).sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
         const completedDaysSet = new Set(currentWeekRecords.map((record) => record.day_of_week).filter(Boolean));
         const completedDays = committedDays.filter((day) => completedDaysSet.has(day));
